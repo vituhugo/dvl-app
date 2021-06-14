@@ -4,9 +4,12 @@ import static com.dvlcube.app.manager.data.e.Menu.MONITORING;
 import static com.dvlcube.utils.query.MxQuery.$;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.dvlcube.utils.aspects.stats.Stat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvlcube.app.interfaces.MenuItem;
-import com.dvlcube.utils.aspects.stats.Stat;
 import com.dvlcube.utils.aspects.stats.Stats;
 import com.dvlcube.utils.interfaces.MxService;
 
@@ -31,17 +33,26 @@ import com.dvlcube.utils.interfaces.MxService;
 @MenuItem(value = MONITORING, readOnly = true)
 @RequestMapping("${dvl.rest.prefix}/stats")
 public class StatService implements MxService {
+
 	private Logger log = LogManager.getLogger(this.getClass());
 
-	/**
-	 * @param params
-	 * @return stats
-	 * @since 17 de abr de 2019
-	 * @author Ulisses Lima
-	 */
 	@GetMapping
 	public List<Stat> get(@RequestParam Map<String, String> params) {
-		return Stats.values();
+		Comparator<Stat> compareByTotalAndAvg = (o1, o2) -> {
+			int result = o2.getTotal().compareTo(o1.getTotal());
+			if (0 == result) {
+				Double avg1 = (double)o1.getTotal()/o1.getCount();
+				Double avg2 = (double)o2.getTotal()/o2.getCount();
+
+				result = avg2.compareTo(avg1);
+			}
+			return result;
+		};
+
+		List<Stat> stats = Stats.values();
+		stats.sort(compareByTotalAndAvg);
+
+		return stats;
 	}
 
 	/**

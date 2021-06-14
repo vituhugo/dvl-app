@@ -89,7 +89,7 @@ this.state = {
     </div>
     <div class="footer-copyright">
         <div class="container">
-            dvl-core.it
+            dvl-core.it - Victor Hugo Albuquerque Rodrigues
         </div>
     </div>
 </footer>
